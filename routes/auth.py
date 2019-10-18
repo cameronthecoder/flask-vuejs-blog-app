@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, request
+from flask import Blueprint, request, jsonify, request, g
 from functools import wraps
 from app import app, mysql
 from datetime import datetime, timedelta
@@ -15,13 +15,19 @@ def login_required(f):
             if 'Bearer' in request.headers.get('Authorization'):
                 token = request.headers.get('Authorization').split(' ')[1] # The format would be Bearer <token>
                 try:
-                    jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
+                    decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
                 except jwt.ExpiredSignatureError:
                     return jsonify({'error': 'Token expired or invalid.'}), 401
                 except jwt.InvalidIssuerError:
                     return jsonify({'error': 'Token expired or invalid.'}), 401
                 except jwt.DecodeError:
                     return jsonify({'error': 'Token expired or invalid.'}), 401
+                cur = mysql.connection.cursor()
+                query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
+                result = cur.fetchone()
+                if not result:
+                    return jsonify({'error': 'Unauthorized'}), 401
+                g.user = result
             else:
                 return jsonify({'error': 'Token expired or invalid.'}), 401
         else:
@@ -33,7 +39,7 @@ def login_required(f):
 @login_required
 def create_user():
     json = request.get_json()
-    if not 'username' in request.json or not 'password' in request.json:
+    if not 'username' in json or not 'password' in json:
         return jsonify({'error': 'The username and password fields are required.'}), 422
     cur = mysql.connection.cursor()
     salt = bcrypt.gensalt()
@@ -49,7 +55,7 @@ def create_user():
 @auth_api.route('/auth/login/', methods=['POST'])
 def login():
     json = request.get_json()
-    if not 'username' in request.json or not 'password' in request.json:
+    if not 'username' in json or not 'password' in json:
         return jsonify({'error': 'The username and password fields are required.'}), 422
     cur = mysql.connection.cursor()
     query = cur.execute('SELECT * FROM users WHERE username = %s', [json['username']])

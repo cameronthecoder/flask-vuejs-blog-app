@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 from .auth import login_required
 from app import mysql, app
 
@@ -27,7 +27,8 @@ def posts():
 @login_required
 def create_post():
     json = request.get_json()
-    if not 'title' in request.json or not 'body' in request.json or not 'slug' in request.json:
+    print(g.user['username'])
+    if not 'title' in json or not 'body' in json or not 'slug' in json:
         return jsonify({'error': 'The title, body, and slug fields are required.'}), 422
     cur = mysql.connection.cursor()
     query = cur.execute('INSERT INTO posts (title, body, slug) VALUES (%s, %s, %s)', (json['title'], json['body'], json['slug']))
