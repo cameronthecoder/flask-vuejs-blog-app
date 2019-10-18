@@ -2,9 +2,11 @@ from flask import Flask, request, render_template, redirect, url_for, jsonify
 from functools import wraps
 from flask_mysqldb import MySQL
 from datetime import datetime, timedelta
+from json_encoder import CustomJSONEncoder
 import bcrypt, jwt, os
 
 app = Flask(__name__)
+app.json_encoder = CustomJSONEncoder # custom JSON encoder so the time stamps are formatted in ISO format
 mysql = MySQL(app)
 app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
 app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
@@ -45,7 +47,7 @@ def create_user():
     object = cur.execute(f'SELECT * FROM users WHERE id = {cur.lastrowid}') # return the newly created object back to the user
     result = cur.fetchone()
     cur.close()
-    return jsonify({'id': result['id'], 'title': result['username'], 'active': result['active'], 'password': result['password']})
+    return jsonify({'id': result['id'], 'username': result['username'], 'active': result['active'], 'password': result['password']})
 
 @app.route('/auth/login/', methods=['POST'])
 def login():
