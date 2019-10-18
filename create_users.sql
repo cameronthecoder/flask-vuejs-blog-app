@@ -1,0 +1,7 @@
+CREATE TABLE users (
+    id MEDIUMINT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(15) NOT NULL UNIQUE,
+    password CHAR(60) BINARY NOT NULL,
+    active BOOLEAN DEFAULT true,
+    PRIMARY KEY (id)
+);
