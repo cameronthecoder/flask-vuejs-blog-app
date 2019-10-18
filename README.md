@@ -2,11 +2,11 @@
 
 ---
 # Todo
-- [] Edit route
-- [] Check if the JSON contains the keys needed
-- [] Roles / permissions
-- [] Delete users
-- [] Auto-gen slug
+- [ ] Edit route
+- [ ] Check if the JSON contains the keys needed
+- [ ] Roles / permissions
+- [ ] Delete users
+- [ ] Auto-gen slug
 ## Requirements
 * Flask
 * Flask-MySQLdb
