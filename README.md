@@ -2,16 +2,21 @@
 
 ---
 # Todo
-- [ ] Edit route
+- [x] Split into different route files (Flask Blueprints)
+- [ ] Add edit post route
 - [ ] Check if the JSON contains the keys needed
 - [ ] Roles / permissions
-- [ ] Delete users
-- [ ] Auto-gen slug
+- [ ] Delete / View users
+- [ ] Auto-gen. slug
 ## Requirements
-* Flask
-* Flask-MySQLdb
-* bcrypt
-* pyjwt
+1. Via ```pip``` package manager
+    * Flask
+    * Flask-MySQLdb
+    * bcrypt
+    * pyjwt
+2. Other 
+    * MySQL Database
+    * Python 3
 ## Notes
 * The MySQL user table contains a password field and it needs to be of type ``CHAR 60 BINARY``
 * Make sure to setup all of the enviornment variables before running the application.
