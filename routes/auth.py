@@ -31,6 +31,8 @@ def login_required(f):
 @auth_api.route('/api/users/', methods=['POST'])
 def create_user():
     json = request.get_json()
+    if not 'username' in request.json or not 'password' in request.json:
+        return jsonify({'error': 'The username and password fields are required.'}), 422
     cur = mysql.connection.cursor()
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(json['password'].encode('utf-8'), salt)
@@ -45,6 +47,8 @@ def create_user():
 @auth_api.route('/auth/login/', methods=['POST'])
 def login():
     json = request.get_json()
+    if not 'username' in request.json or not 'password' in request.json:
+        return jsonify({'error': 'The username and password fields are required.'}), 422
     cur = mysql.connection.cursor()
     query = cur.execute('SELECT * FROM users WHERE username = %s', [json['username']])
     result = cur.fetchone()

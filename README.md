@@ -3,8 +3,8 @@
 ---
 # Todo
 - [x] Split into different route files (Flask Blueprints)
-- [ ] Add edit post route
-- [ ] Check if the JSON contains the keys needed
+- [x] Add edit post route
+- [x] Check if the JSON contains the keys needed
 - [ ] Roles / permissions
 - [ ] Delete / View users
 - [ ] Auto-gen. slug
