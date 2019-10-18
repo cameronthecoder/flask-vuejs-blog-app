@@ -40,6 +40,7 @@ def create_post():
     return jsonify({'id': result['id'], 'title': result['title'], 'body': result['body'], 'slug': result['slug'], 'created_at': result['created_at']}), 201
 
 @posts_api.route('/<int:id>/', methods=['PUT'])
+@login_required
 def edit_post(id):
     cur = mysql.connection.cursor()
     object = cur.execute(f'SELECT * FROM posts WHERE id = {id}')
@@ -64,7 +65,7 @@ def delete_post(id):
         return jsonify({'error': 'That post does not exist.'}), 404
     query = cur.execute(f'DELETE FROM posts WHERE id = {id}')
     mysql.connection.commit()
-    
+    cur.close()
     return jsonify({'success': 'The post has been successfully deleted.'})
 
 

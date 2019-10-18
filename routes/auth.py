@@ -7,6 +7,7 @@ auth_api = Blueprint('auth_api', __name__)
 
 # Login Required Middleware
 def login_required(f):
+    "Makes sure the request contains a Bearer token to authenticate the user before the request is fully processed."
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = None
@@ -29,6 +30,7 @@ def login_required(f):
     return decorated_function
 
 @auth_api.route('/api/users/', methods=['POST'])
+@login_required
 def create_user():
     json = request.get_json()
     if not 'username' in request.json or not 'password' in request.json:
