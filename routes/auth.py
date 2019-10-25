@@ -7,7 +7,7 @@ auth_api = Blueprint('auth_api', __name__)
 
 # Login Required Middleware
 def login_required(f):
-    "Makes sure the request contains a Bearer token to authenticate the user before the request is fully processed."
+    "This function will make sure the request contains a Bearer token to authenticate the user before the request is fully processed."
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = None
@@ -25,8 +25,8 @@ def login_required(f):
                 cur = mysql.connection.cursor()
                 query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
                 result = cur.fetchone()
-                if not result:
-                    return jsonify({'error': 'Unauthorized'}), 401
+                if not result or not result['active']:
+                    return jsonify({'error': 'Account de-activated.'}), 401
                 g.user = result
             else:
                 return jsonify({'error': 'Token expired or invalid.'}), 401
@@ -52,6 +52,21 @@ def create_user():
     cur.close()
     return jsonify({'id': result['id'], 'username': result['username'], 'active': result['active'], 'password': result['password']})
 
+@auth_api.route('/api/users/')
+@login_required
+def users():
+    cur = mysql.connection.cursor()
+    query = cur.execute('SELECT * FROM users;')
+    result = cur.fetchall()
+    users = []
+    for user in result:
+        users.append({
+            'username': user['username'],
+            'id': user['id'],
+            'active': user['active']
+        })
+    return jsonify({'users': users})
+
 @auth_api.route('/auth/login/', methods=['POST'])
 def login():
     json = request.get_json()
@@ -60,7 +75,7 @@ def login():
     cur = mysql.connection.cursor()
     query = cur.execute('SELECT * FROM users WHERE username = %s', [json['username']])
     result = cur.fetchone()
-    if query:
+    if result:
         if not result['active']:
             return jsonify({'error': 'That user is not active.'}), 401
         elif not bcrypt.checkpw(json['password'].encode('utf-8'), result['password'].encode('utf-8')):
@@ -68,3 +83,5 @@ def login():
         else:
             encoded_jwt = jwt.encode({'id': result['id'], 'username': json['username'], 'exp': datetime.utcnow() + timedelta(days=1), 'iss': 'blogapp'}, app.config['SECRET_KEY'], algorithm='HS256')
             return jsonify({'token': encoded_jwt})
+    else:
+        return jsonify({'error': 'The username or password is incorrect.'}), 401

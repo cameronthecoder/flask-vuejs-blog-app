@@ -1,12 +1,13 @@
 from flask import Flask
 from flask_mysqldb import MySQL
-from datetime import datetime, timedelta
 from json_encoder import CustomJSONEncoder
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
 app.json_encoder = CustomJSONEncoder # custom JSON encoder so the time stamps are formatted in ISO format
 mysql = MySQL(app)
+CORS(app)
 app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
 app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
 app.config['MYSQL_DB'] = os.environ['MYSQL_DB']
