@@ -17,11 +17,11 @@ def login_required(f):
                 try:
                     decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
                 except jwt.ExpiredSignatureError:
-                    return jsonify({'error': 'Token expired or invalid.'}), 401
+                    return jsonify({'error': 'Token expired.'}), 401
                 except jwt.InvalidIssuerError:
-                    return jsonify({'error': 'Token expired or invalid.'}), 401
+                    return jsonify({'error': 'Token contains an invalid issuer.'}), 401
                 except jwt.DecodeError:
-                    return jsonify({'error': 'Token expired or invalid.'}), 401
+                    return jsonify({'error': 'Token invalid.'}), 401
                 cur = mysql.connection.cursor()
                 query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
                 result = cur.fetchone()
@@ -47,10 +47,10 @@ def create_user():
     query = cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (json['username'], hashed))
     mysql.connection.commit()
 
-    object = cur.execute(f'SELECT * FROM users WHERE id = {cur.lastrowid}') # return the newly created object back to the user
+    object = cur.execute('SELECT * FROM users WHERE id = %s', (cur.lastrowid)) # return the newly created object back to the user
     result = cur.fetchone()
     cur.close()
-    return jsonify({'id': result['id'], 'username': result['username'], 'active': result['active'], 'password': result['password']})
+    return jsonify({'success': 'The user has been successfully created.'})
 
 @auth_api.route('/api/users/')
 @login_required

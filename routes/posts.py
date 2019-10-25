@@ -38,7 +38,7 @@ def edit_post(id):
     if not result:
         return jsonify({'error': 'That post does not exist.'}), 404
     json = request.get_json()
-    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %s', (json['title'], json['body'], json['slug'], id))
+    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %s', (json['title'], json['body'], json['slug'], str(id)))
     mysql.connection.commit()
     cur.close()
     return jsonify({'success': 'The post has been successfully modified.'})
