@@ -25,13 +25,15 @@ def login_required(f):
                 cur = mysql.connection.cursor()
                 query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
                 result = cur.fetchone()
-                if not result or not result['active']:
+                if not result:
+                    return jsonify({'error': 'That user does not exist.'})
+                if not result['active']:
                     return jsonify({'error': 'Account de-activated.'}), 401
                 g.user = result
             else:
                 return jsonify({'error': 'Token expired or invalid.'}), 401
         else:
-            return jsonify({'error': 'Unauthorized'}), 401
+            return jsonify({'error': 'Missing JWT token.'}), 401
         return f(*args, **kwargs)
     return decorated_function
 

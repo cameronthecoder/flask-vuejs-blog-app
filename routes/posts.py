@@ -16,7 +16,6 @@ def posts():
 @login_required
 def create_post():
     json = request.get_json()
-    print(g.user['id'])
     if not 'title' in json or not 'body' in json or not 'slug' in json:
         return jsonify({'error': 'The title, body, and slug fields are required.'}), 422
     cur = mysql.connection.cursor()
@@ -38,7 +37,8 @@ def edit_post(id):
     if not result:
         return jsonify({'error': 'That post does not exist.'}), 404
     json = request.get_json()
-    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %s', (json['title'], json['body'], json['slug'], str(id)))
+    # TODO: TEST IF %i works
+    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %i', (json['title'], json['body'], json['slug'], id))
     mysql.connection.commit()
     cur.close()
     return jsonify({'success': 'The post has been successfully modified.'})
