@@ -20,6 +20,5 @@ from routes.users import users_api
 app.register_blueprint(auth_api, url_prefix='/api/auth')
 app.register_blueprint(posts_api, url_prefix='/api/posts')
 app.register_blueprint(users_api, url_prefix='/api/users')
-
 if __name__ == "__main__":
     app.run(debug=True)

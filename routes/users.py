@@ -2,8 +2,28 @@ from flask import Blueprint, request, jsonify, request, g
 from .auth import login_required
 from json_utils import verify_parameters
 from app import app, mysql
+from getpass import getpass
+import click, bcrypt
 
-users_api = Blueprint('users_api', __name__)
+users_api = Blueprint('users_api', __name__, cli_group=None)
+
+
+@users_api.cli.command('create-user')
+def create():
+    username = input('Username: ')
+    password = getpass('Password: ')
+    cur = mysql.connection.cursor()
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    try:
+        query = cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed))
+        mysql.connection.commit()
+    except MySQLdb._exceptions.IntegrityError:
+        raise Exception('Error: That user already exists.')
+
+    cur.close()
+    print(f'User {username} successfully created.')
+
 
 @users_api.route('/', methods=['POST'])
 @verify_parameters(['username', 'password'])
