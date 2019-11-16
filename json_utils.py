@@ -1,5 +1,5 @@
 from flask.json import JSONEncoder
-from flask import g, request, redirect, url_for, jsonify
+from flask import request, jsonify
 from datetime import date
 from functools import wraps
 
@@ -28,7 +28,7 @@ def verify_parameters(keys):
                 errors = []
                 for key in keys:
                     if key not in json or len(json[key]) <= 0:
-                        errors.append({f'The {key.title()} field is required.'})
+                        errors.append({f'The {key} field is required.'})
                 if errors:
                     return jsonify({'errors': errors})
             return f(*args, **kwargs)
