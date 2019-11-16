@@ -68,8 +68,6 @@ def login():
     # Get the JSON from the request
     json = request.get_json()
     # Check if the JSON contains the keys needed to login
-    #if not 'username' in json or not 'password' in json:
-    #    return jsonify({'error': 'The username and password fields are required.'}), 422
     cur = mysql.connection.cursor()
     query = cur.execute('SELECT * FROM users WHERE username = %s', [json['username']])
     result = cur.fetchone()

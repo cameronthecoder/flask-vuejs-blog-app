@@ -41,6 +41,7 @@ I am open to anyone submitting a pull request or issue if you want to improve, m
     ```
     3. Create the tables using [create_posts.sql](create_posts.sql) and [create_users.sql](create_users.sql) (will be automated later)
     4. Exit MySQL (```exit```)
+    5. **Important: If you're using Ubuntu (or a similar OS) make sure you install the ```libmysqlclient-dev``` package, if you don't the pip command will result in an ```OSError``` error.**
 2. Create a Python virtual enviornment and activate it:
 ```
 python3 -m venv env
