@@ -8,6 +8,7 @@ import jwt, bcrypt, MySQLdb
 auth_api = Blueprint('auth_api', __name__)
 
 def verify_token(token):
+    # I wish I could give more detailed messages on why the token is not valid, but Flask won't let me return a response inside of this function so for now we just have to guess? 🤷 
     try:
         decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
     except:
