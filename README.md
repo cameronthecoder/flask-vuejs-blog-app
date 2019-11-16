@@ -24,12 +24,13 @@
 - [ ] Auto-gen. slug
 - [ ] VueJS front-end
 ## Contributions
-I am open to anyone submitting a pull request or issue if you want to improve, make a suggestion, or add to my code.
+I am open to anyone submitting a pull request or issue if you want to improve, make a suggestion, or add to my code 😀.
 ## Running the app
 1. Install MySQL
    * [Ubuntu](https://help.ubuntu.com/lts/serverguide/mysql.html)
    * [Windows](https://dev.mysql.com/downloads/installer/)
    * [MacOS (Two different options)](https://dev.mysql.com/doc/mysql-osx-excerpt/5.7/en/osx-installation.html)
+   ---
     1. Log into the MySQL server and create a database
     ```sql
     CREATE DATABASE <name>
@@ -38,8 +39,8 @@ I am open to anyone submitting a pull request or issue if you want to improve, m
     ```sql
     USE <name>
     ```
-    3. Create the tables [create_posts.sql](create_posts.sql) and [create_users.sql](create_users.sql)
-    4. Exit MySQL
+    3. Create the tables using [create_posts.sql](create_posts.sql) and [create_users.sql](create_users.sql) (will be automated later)
+    4. Exit MySQL (```exit```)
 2. Create a Python virtual enviornment and activate it:
 ```
 python3 -m venv env
@@ -69,10 +70,12 @@ python3 app.py
 flask create-user
 Username: <username>
 Password: <password>
+User <username> successfully created.
 ```
 or
 ```
 python3 app.py create-user
 Username: <username>
 Password: <password>
+User <username> successfully created.
 ```
