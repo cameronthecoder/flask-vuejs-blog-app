@@ -28,7 +28,7 @@ def verify_parameters(keys):
                 errors = []
                 for key in keys:
                     if key not in json or len(json[key]) <= 0:
-                        errors.append({f'{key.title()} is required'})
+                        errors.append({f'The {key.title()} field is required.'})
                 if errors:
                     return jsonify({'errors': errors})
             return f(*args, **kwargs)
