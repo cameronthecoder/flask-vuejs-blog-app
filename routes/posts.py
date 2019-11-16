@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, g
 from .auth import login_required
+from json_utils import verify_parameters
 from app import mysql, app
 
 posts_api = Blueprint('posts_api', __name__)
@@ -13,17 +14,16 @@ def posts():
 
 
 @posts_api.route('/', methods=['POST'])
+@verify_parameters(['title', 'body', 'slug'])
 @login_required
 def create_post():
     json = request.get_json()
-    if not 'title' in json or not 'body' in json or not 'slug' in json:
-        return jsonify({'error': 'The title, body, and slug fields are required.'}), 422
     cur = mysql.connection.cursor()
-    query = cur.execute('INSERT INTO posts (title, body, slug, author_id, draft) VALUES (%s, %s, %s, %s, %s)', (json['title'], json['body'], json['slug'], g.user['id'], json.get('draft', False)))
+    query = cur.execute('INSERT INTO posts (title, body, slug, author_id, draft) VALUES (%s, %s, %s, %s, %s)', (json['title'], json['body'], json['slug'], str(g.user['id']), json.get('draft', False)))
     # Commit to DB
     mysql.connection.commit()
 
-    object = cur.execute('SELECT * FROM posts WHERE id = %s', (cur.lastrowid)) # return the newly created object back to the user
+    object = cur.execute('SELECT * FROM posts WHERE id = %s', str(cur.lastrowid)) # return the newly created object back to the user
     result = cur.fetchone()
     cur.close()
     return jsonify({'post': result}), 201
@@ -37,8 +37,7 @@ def edit_post(id):
     if not result:
         return jsonify({'error': 'That post does not exist.'}), 404
     json = request.get_json()
-    # TODO: TEST IF %i works
-    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %i', (json['title'], json['body'], json['slug'], id))
+    query = cur.execute('UPDATE posts SET title = %s, body = %s, slug = %s WHERE id = %s', (json['title'], json['body'], json['slug'], str(id)))
     mysql.connection.commit()
     cur.close()
     return jsonify({'success': 'The post has been successfully modified.'})

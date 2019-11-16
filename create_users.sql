@@ -3,5 +3,7 @@ CREATE TABLE users (
     username VARCHAR(15) NOT NULL UNIQUE,
     password CHAR(60) BINARY NOT NULL,
     active BOOLEAN DEFAULT true,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NOW() ON UPDATE NOW(),
     PRIMARY KEY (id)
 );

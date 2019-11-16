@@ -5,7 +5,7 @@
 - [x] Split routes into different files (Flask Blueprints)
 - [x] Add edit post route
 - [x] Check if the JSON contains the keys needed
-  - [ ] Add a decorator to simplify the route function instead of checking every time?
+  - [x] Add a decorator to simplify the route function instead of checking every time?
   ```python
   # Example API route
   @posts_api.route('/', methods=['POST'])
@@ -16,10 +16,10 @@
   ```    
 - [x] Use prepared statements
 - [x] Add author_id and draft to the posts schema
+- [x] Refresh tokens for better UX (I hope I have implemented this correctly, please let me know if I have not.)
 - [ ] Roles / permissions
 - [ ] Implement tests
 - [ ] Automatic table creation
-- [ ] Refresh tokens for better UX
 - [ ] Delete / View users
 - [ ] Auto-gen. slug
 - [ ] VueJS front-end

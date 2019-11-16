@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_mysqldb import MySQL
-from json_encoder import CustomJSONEncoder
+from json_utils import CustomJSONEncoder
 from flask_cors import CORS
 import os
 
@@ -16,9 +16,10 @@ app.config['SECRET_KEY'] = os.environ['APP_SECRET_KEY']
 
 from routes.posts import posts_api
 from routes.auth import auth_api
-app.register_blueprint(auth_api)
+from routes.users import users_api
+app.register_blueprint(auth_api, url_prefix='/api/auth')
 app.register_blueprint(posts_api, url_prefix='/api/posts')
-
+app.register_blueprint(users_api, url_prefix='/api/users')
 
 if __name__ == "__main__":
     app.run(debug=True)
