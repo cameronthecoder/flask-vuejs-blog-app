@@ -7,14 +7,6 @@ import jwt, bcrypt, MySQLdb
 
 auth_api = Blueprint('auth_api', __name__)
 
-def verify_token(token):
-    # I wish I could give more detailed messages on why the token is not valid, but Flask won't let me return a response inside of this function so for now we just have to guess? 🤷 
-    try:
-        decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
-    except:
-        return False
-    return decoded
-
 # Login Required Middleware
 def login_required(f):
     "This function will make sure the request contains a Bearer token to authenticate the user before the request is fully processed."
@@ -26,10 +18,16 @@ def login_required(f):
                 token = request.headers.get('Authorization').split()[1] # The format would be Bearer <token>
                 # Decode the token and throw an error if the token is invalid
                 # Query the database to make sure the user exists and is has an active account
-                decoded_token = verify_token(token)
-                if not decoded_token(token): return jsonify({'error': 'Invalid token'}), 401
+                try:
+                    decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
+                except jwt.ExpiredSignatureError:
+                    return jsonify({'error': 'Token expired.'}), 401
+                except jwt.InvalidIssuerError:
+                    return jsonify({'error': 'Token contains an invalid issuer.'}), 401
+                except jwt.DecodeError:
+                    return jsonify({'error': 'Token invalid.'}), 401
                 cur = mysql.connection.cursor()
-                query = cur.execute(f'SELECT * FROM users WHERE id = {decoded_token["id"]}')
+                query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
                 result = cur.fetchone()
                 # Throws an error if the user doesn't exist or isn't active
                 if not result:
@@ -47,10 +45,16 @@ def login_required(f):
 @auth_api.route('/refresh_token/', methods=['POST'])
 def refresh_token():
     token = request.headers.get('Authorization').split()[1]
-    decoded_token = verify_token(token)
-    if not decoded_token(token): return jsonify({'error': 'Invalid token'}), 401
+    try:
+        decoded = jwt.decode(token, app.config['SECRET_KEY'], issuer='blogapp', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expired.'}), 401
+    except jwt.InvalidIssuerError:
+        return jsonify({'error': 'Token contains an invalid issuer.'}), 401
+    except jwt.DecodeError:
+        return jsonify({'error': 'Token invalid.'}), 401
     cur = mysql.connection.cursor() 
-    query = cur.execute(f'SELECT * FROM users WHERE id = {decoded_token["id"]}')
+    query = cur.execute(f'SELECT * FROM users WHERE id = {decoded["id"]}')
     result = cur.fetchone()
     # Throws an error if the user doesn't exist or isn't active
     if not result:
@@ -81,8 +85,16 @@ def login():
             return jsonify({'error': 'The username or password is incorrect.'}), 401
         # If everything is okay, encode a JWT token with the user's ID and username in the body and set the expiration date aswell as the issuer
         else:
-            access_token = jwt.encode({'id': result['id'], 'username': json['username'], 'exp': datetime.utcnow() + timedelta(seconds=180), 'iss': 'blogapp'}, app.config['SECRET_KEY'], algorithm='HS256')
-            refresh_token = jwt.encode({'exp': datetime.utcnow() + timedelta(days=14), 'iss': 'blogapp'}, app.config['SECRET_KEY'], algorithm='HS256')
-            return jsonify({'refresh_token': refresh_token, 'access_token': access_token})
+            access_token = jwt.encode(
+                {'id': result['id'], 'username': json['username'], 
+                'exp': datetime.utcnow() + timedelta(seconds=180), 
+                'iss': 'blogapp'}, app.config['SECRET_KEY'], 
+                algorithm='HS256')
+            refresh_token = jwt.encode(
+                {'exp': datetime.utcnow() + timedelta(days=14), 'iss': 'blogapp'}, 
+                app.config['SECRET_KEY'], algorithm='HS256')
+            # Convert JWT's to strings :)
+            return jsonify({'refresh_token': refresh_token.decode('utf-8'), 'access_token': access_token.decode('utf-8')})
+            
     else:
         return jsonify({'error': 'That user does not exist.'}), 401
