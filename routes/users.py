@@ -4,6 +4,7 @@ from json_utils import verify_parameters
 from app import app, mysql
 from getpass import getpass
 import click, bcrypt
+from MySQLdb._exceptions import IntegrityError
 
 users_api = Blueprint('users_api', __name__, cli_group=None)
 
@@ -18,7 +19,7 @@ def create():
     try:
         query = cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed))
         mysql.connection.commit()
-    except MySQLdb._exceptions.IntegrityError:
+    except IntegrityError:
         raise Exception('Error: That user already exists.')
 
     cur.close()
@@ -36,7 +37,7 @@ def create_user():
     try:
         query = cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (json['username'], hashed))
         mysql.connection.commit()
-    except MySQLdb._exceptions.IntegrityError:
+    except IntegrityError:
         return jsonify({'error': 'That user already exists.'}), 409
 
     object = cur.execute('SELECT * FROM users WHERE id = %s', str(cur.lastrowid)) # return the newly created object back to the user

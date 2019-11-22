@@ -64,7 +64,7 @@ def refresh_token():
 
     access_token = jwt.encode({'id': result['id'], 'username': result['username'], 'exp': datetime.utcnow() + timedelta(seconds=180), 'iss': 'blogapp'}, app.config['SECRET_KEY'], algorithm='HS256')
 
-    return jsonify({'access_token': access_token})
+    return jsonify({'access_token': access_token.decode('utf-8')})
     
 @auth_api.route('/login/', methods=['POST'])
 @verify_parameters(['username', 'password'])
