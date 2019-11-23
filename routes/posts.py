@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify, request, g
 from .auth import login_required
 from json_utils import verify_parameters
 from app import mysql, app
-
 posts_api = Blueprint('posts_api', __name__)
 
 @posts_api.route('/', methods=['GET'])
@@ -57,12 +56,21 @@ def delete_post(id):
     cur.close()
     return jsonify({'success': 'The post has been successfully deleted.'})
 
-
+@posts_api.route('/filter/')
+def filter():
+    title = request.args.get('title', default='*', type = str)
+    body = request.args.get('body', default='*', type = str)
+    print(title, body)
+    cur = mysql.connection.cursor()
+    query = cur.execute('SELECT title, body FROM posts WHERE title LIKE %s OR body LIKE %s', ("%" + title + "%", "%" + body + "%"))
+    result = cur.fetchall()
+    return jsonify(result)
 @posts_api.route('/<int:id>/', methods=['GET'])
 def get_post(id):
     cur = mysql.connection.cursor()
     query = cur.execute('SELECT * FROM posts WHERE ID = %s', (str(id)))
     result = cur.fetchone()
+    print(result)
     if result:
         return jsonify({'post': result})
     else:

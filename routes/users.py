@@ -20,10 +20,11 @@ def create():
         query = cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed))
         mysql.connection.commit()
     except IntegrityError:
-        raise Exception('Error: That user already exists.')
-
-    cur.close()
-    print(f'User {username} successfully created.')
+        cur.close()
+        print('Error: That user already exists.')
+    else:
+        cur.close()
+        print(f'User {username} successfully created.')
 
 
 @users_api.route('/', methods=['POST'])
