@@ -28,4 +28,31 @@ const router = new VueRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    // check if both tokens are valid
+      if (this.$store.state.refresh_token == null || this.$store.state.access_token == null) {
+        console.log('this is atest');
+          next({
+              path: '/login',
+              params: { nextUrl: to.fullPath }
+          })
+      } else {
+          let user = this.$store.state.user
+          if(to.matched.some(record => record.meta.is_admin)) {
+              if(user.is_admin == 1){
+                  next()
+              }
+              else{
+                  next({ name: 'userboard'})
+              }
+          }else {
+              next()
+          }
+      }
+  } else {
+      next() 
+  }
+})
+
 export default router
