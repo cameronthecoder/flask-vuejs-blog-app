@@ -1,46 +1,74 @@
 import Axios from "axios";
-import Vue from 'vue';
+import jwt_decode from 'jwt-decode';
+
 const state = {
-    refresh_token: null || Vue.$cookies.get('refreshToken'),
-    access_token: null || Vue.$cookies.get('access_token'),
+    refresh_token: window.$cookies.get('refresh_token') || null,
+    access_token: window.$cookies.get('access_token') || null,
     user: {},
     loading: false,
-    messages: {}
+    messages: []
 };
 
 const getters = {
     getRefreshToken: state => state.refresh_token,
     getAccessToken: state => state.access_token,
     getTokenData: state => state.user,
-    loading: state => state.loading,
+    authLoading: state => state.loading,
     getMessages: state => state.messages
 };
 
 const actions = {
-    async fetchJWT({ commit }, { username, password }) {
-        const res = await Axios.post('http://localhost:5000/api/auth/login/', {
-            username: username,
-            password: password
+    async fetchJWT({ commit }, credentials) {
+        return new Promise((resolve, reject) => {
+        commit('setLoading', true);
+        Axios.post('http://localhost:5000/api/auth/login/', {
+            username: credentials.username,
+            password: credentials.password
           })
           .then(function (response) {
-              console.log(response);
+            commit('setLoading', false);
+            commit('setAccessToken', response.data.access_token);
+            commit('setRefreshToken', response.data.refresh_token);
+            const decoded = jwt_decode(response.data.access_token);
+            const user = {
+                id: decoded.id,
+                username: decoded.username
+            }
+            commit('setUser', user);
+            commit('addMessage', {
+                message: 'Hello World',
+                type: 'success'
+            });
+            resolve(response);
           })
           .catch(function (error) {
-            console.log(error);
+            commit('setLoading', false);
+            if (error.response) {
+                commit('addMessage', { 
+                    message: error.response.data.error, 
+                    type: 'error' 
+                })
+            } else {
+                commit('addMessage', { 
+                    message: 'Something went wrong. Please try again later.', 
+                    type: 'error' 
+                })
+            }
+            reject(error);
           });
-          commit('setAccessToken', res.data.access_token);
-          commit('setRefreshToken', res.data.refresh_token);
+        }) 
     },
-    addMessage({commit}, { type, message }) {
-        commit('addMessage', {type, message});
-    }
 };
 
 const mutations = {
-    setAccessToken: (state, jwt) => (this.$cookies.set('access_token', jwt)),
-    setRefreshToken: (state, jwt) => (this.$cookies.set('refresh_token', jwt)),
+    setAccessToken: (jwt) => (window.$cookies.set('access_token', jwt)),
+    setRefreshToken: (jwt) => (window.$cookies.set('refresh_token', jwt)),
+    setUser: (state, user) => (state.user = user),
     setLoading: (state, loading) => (state.loading = loading),
-    addMessage: (state, message) => state.messages.append(message),
+    addMessage: (state, { message, type }) => {
+        state.messages = [];
+        state.messages.push({message, type});
+    }
 };
 
 export default {
