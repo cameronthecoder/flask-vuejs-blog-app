@@ -1,74 +1,70 @@
 <template>
-<div class="hello">
-  <div class="container">
-  <div class="columns is-desktop">
-    <div class="column is-two-thirds">
-      <progress v-if="loading" class="progress is-small is-primary" max="100" />
-      <div :v-if="getPosts" v-for="(post, index) in getPosts" :key="index">
-        <Card :post="post" />
-      </div>
-  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-    <a class="pagination-previous">Previous</a>
-    <a class="pagination-next">Next page</a>
-    <ul class="pagination-list">
-      <li><a class="pagination-link" aria-label="Goto page 1">1</a></li>
-      <li><span class="pagination-ellipsis">&hellip;</span></li>
-      <li><a class="pagination-link" aria-label="Goto page 45">45</a></li>
-      <li><a class="pagination-link is-current" aria-label="Page 46" aria-current="page">46</a></li>
-      <li><a class="pagination-link" aria-label="Goto page 47">47</a></li>
-      <li><span class="pagination-ellipsis">&hellip;</span></li>
-      <li><a class="pagination-link" aria-label="Goto page 86">86</a></li>
-    </ul>
-  </nav>
-    </div>
-    <div class="column">
-      <nav class="panel is-primary">
-    <p class="panel-heading">
-      Year archive
-    </p>
-    <a class="panel-block is-active">
-      2019
-    </a>
-    <a class="panel-block">
-      2018
-    </a>
-    <a class="panel-block">
-      2017
-    </a>
-    <a class="panel-block">
-      2016
-    </a>
-    <a class="panel-block">
-      2015
-    </a>
-    <a class="panel-block">
-      2014
-    </a>
-  </nav>
-    </div>
-  </div>
-  </div>
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>
-        <strong>A random blog</strong> by <a href="https://jgthms.com">Cameron</a>.
-      </p>
-    </div>
-  </footer>
-</div>
+<div class="home">
+    <!-- Bulma template from https://bulmatemplates.github.io/bulma-templates/ -->
+    <!-- START NAV -->
+    <!-- END NAV -->
+    <Navbar />
+    <section class="hero is-info is-medium is-bold">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title">Cameron's Blog</h1>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="container">
+        <!-- START ARTICLE FEED -->
+        <section class="articles">
+            <div class="column is-8 is-offset-2">
+                <!-- START ARTICLE -->
+                <div v-for="post in getPosts" :key="post.id">
+                  <div class="card article">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content has-text-centered">
+                                <p class="title article-title">{{post.title}}</p>
+                                <div class="tags has-addons level-item">
+                                    <span class="tag is-rounded is-info">{{post.username}}</span>
+                                    <span :class="{'tag': true, 'is-rounded': true, 'is-danger': post.role == 'Administrator', 'is-warning': post.role == 'Moderator'}" :v-if="post.role">{{post.role}}</span>
+                                    <span class="tag is-rounded">{{ friendlyDate(post.created_at) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content article-body">
+                           <p>{{post.body}}</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
 </template>
 
 <script>
-import Card from '../components/Card';
 import { mapGetters, mapActions } from 'vuex';
-
+import Navbar from '../components/Navbar.vue'
 export default {
   name: 'Home',
   components: {
-    Card
+    Navbar
+  },
+  data () {
+    return {
+      months: ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    }
   },
   methods: {
-    ...mapActions(['fetchPosts']),
+    ...mapActions(['fetchPosts']), 
+    PMorAM: function (num) {
+      return num >= 12 ? 'PM' : 'AM' 
+    },
+    friendlyDate: function(date) {
+      let d = new Date(date);
+      return `${this.months[d.getMonth()]} ${d.getDay()}, ${d.getFullYear()}, ${d.getUTCHours()}:${d.getMinutes()} ${this.PMorAM(d.getUTCHours)}`;
+    }
   },
   computed: mapGetters(['getPosts', 'loading']),
   created () {
@@ -79,13 +75,71 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.columns {
-  margin-top: 10px;
+html,body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  background: #F0F2F4;
 }
-.card {
-  margin-bottom: 10px;
+.navbar.is-white {
+  background: #F0F2F4;
 }
-.footer {
-  margin-top: 30px;
+.navbar-brand .brand-text {
+  font-size: 1.11rem;
+  font-weight: bold;
+}
+.hero-body {
+background-image: url(../assets/dam-3-grey.jpg);
+background-position: center;
+background-size: cover;
+background-repeat: no-repeat;
+height: 500px;
+}
+.articles {
+  margin: 5rem 0;
+  margin-top: -200px;
+}
+.articles .content p {
+    line-height: 1.9;
+    margin: 15px 0;
+}
+.author-image {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin-left: -30px;
+    border: 3px solid #ccc;
+    border-radius: 50%;
+}
+.media-center {
+  display: block;
+  margin-bottom: 1rem;
+}
+.media-content {
+  margin-top: 3rem;
+}
+.article, .promo-block {
+  margin-top: 6rem;
+}
+div.column.is-8:first-child {
+  padding-top: 0;
+  margin-top: 0;
+}
+.article-title {
+  font-size: 2rem;
+  font-weight: lighter;
+  line-height: 2;
+}
+.article-subtitle {
+  color: #909AA0;
+  margin-bottom: 3rem;
+}
+.article-body {
+  line-height: 1.4;
+  margin: 0 6rem;
+}
+.promo-block .container {
+  margin: 1rem 5rem;
 }
 </style>

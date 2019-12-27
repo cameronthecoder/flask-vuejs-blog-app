@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import NewPost from '../views/NewPost.vue'
 import Login from '../views/Login.vue'
+import TestRoute from '../views/TestRoute.vue'
+import store from '../store/index'
+import Unauthorized from '../views/permissions/Unauthorized.vue' 
 Vue.use(VueRouter)
-
 const routes = [
   {
     path: '/',
@@ -12,47 +13,67 @@ const routes = [
     component: Home
   },
   {
-    path: '/new',
-    name: 'new',
-    component: NewPost
+    path: '/test_route',
+    name: 'test_route',
+    component: TestRoute,
+    meta: { }
   },
   {
     path: '/login',
     name: 'login',
     component: Login,
-    meta: { noNav: true, noHeader: true }
-  }
+    meta: { noNav: true }
+  },
+  {
+    path: '/error',
+    name: 'unauthorized',
+    component: Unauthorized,
+  },
 ]
 
 const router = new VueRouter({
   routes
 })
+const loggedIn = store.getters.isloggedIn
 
 router.beforeEach((to, from, next) => {
   if(to.matched.some(record => record.meta.requiresAuth)) {
-    // check if both tokens are valid
-      if (this.$store.state.refresh_token == null || this.$store.state.access_token == null) {
-        console.log('this is atest');
+      if (!loggedIn) {
           next({
-              path: '/login',
+              path: 'login',
               params: { nextUrl: to.fullPath }
           })
       } else {
-          let user = this.$store.state.user
-          if(to.matched.some(record => record.meta.is_admin)) {
-              if(user.is_admin == 1){
-                  next()
-              }
-              else{
-                  next({ name: 'userboard'})
-              }
-          }else {
-              next()
-          }
+         next();
       }
+    } else {
+      next()
+    }
+  })
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.roles)) {
+       if (!loggedIn) {
+          next({
+            path: 'login',
+            params: { nextUrl: to.fullPath }
+        })
+       } else {
+        const roles = to.meta.roles;                                                                                                                                           
+        if (!roles.includes(store.state.auth.user.role)) {
+          next({
+            path: 'unauthorized'
+          })
+          // TODO: handle this ;)
+        } else {
+          next();
+        }
+    }
   } else {
-      next() 
+    next()
   }
-})
+})  
+
+
 
 export default router

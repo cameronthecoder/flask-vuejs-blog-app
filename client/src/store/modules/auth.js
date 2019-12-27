@@ -1,15 +1,17 @@
 import Axios from "axios";
 import jwt_decode from 'jwt-decode';
+import VueCookies from 'vue-cookies';
 
 const state = {
-    refresh_token: window.$cookies.get('refresh_token') || null,
-    access_token: window.$cookies.get('access_token') || null,
-    user: {},
+    refresh_token: VueCookies.get('refresh_token') || null,
+    access_token: VueCookies.get('access_token') || null,
+    user: window.$cookies.get('user') || null,
     loading: false,
     messages: []
 };
 
 const getters = {
+    isloggedIn: state => state.refresh_token !== null && state.access_token !== null,
     getRefreshToken: state => state.refresh_token,
     getAccessToken: state => state.access_token,
     getTokenData: state => state.user,
@@ -27,16 +29,20 @@ const actions = {
           })
           .then(function (response) {
             commit('setLoading', false);
+            VueCookies.set('access_token', response.data.access_token)
+            VueCookies.set('refresh_token', response.data.refresh_token)
             commit('setAccessToken', response.data.access_token);
             commit('setRefreshToken', response.data.refresh_token);
             const decoded = jwt_decode(response.data.access_token);
             const user = {
                 id: decoded.id,
-                username: decoded.username
+                username: decoded.username,
+                role: decoded.role
             }
+            VueCookies.set('user', user)
             commit('setUser', user);
             commit('addMessage', {
-                message: 'Hello World',
+                message: 'Login success!',
                 type: 'success'
             });
             resolve(response);
@@ -58,11 +64,17 @@ const actions = {
           });
         }) 
     },
+    // TODO: logout
+    //logout({commit}) {
+    //    //VueCookies.remove("access_token")
+    //    //VueCookies.remove("refresh_token")
+    //   //VueCookies.remove("user")
+    //}
 };
 
 const mutations = {
-    setAccessToken: (jwt) => (window.$cookies.set('access_token', jwt)),
-    setRefreshToken: (jwt) => (window.$cookies.set('refresh_token', jwt)),
+    setAccessToken: (jwt) => (state.access_token = jwt),
+    setRefreshToken: (jwt) => (state.refresh_token = jwt),
     setUser: (state, user) => (state.user = user),
     setLoading: (state, loading) => (state.loading = loading),
     addMessage: (state, { message, type }) => {

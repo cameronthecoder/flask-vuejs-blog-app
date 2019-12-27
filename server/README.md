@@ -1,4 +1,4 @@
-# Flask REST API with JWT Authentication
+# Flask REST API with JWT Authentication (Server)
 
 ---
 # TODO
@@ -17,8 +17,19 @@
 - [x] Use prepared statements
 - [x] Add author_id and draft to the posts schema
 - [x] Refresh tokens for better UX (I hope I have implemented this correctly, please let me know if I haven't.)
-- [ ] Roles / permissions
-- [ ] Implement tests
+- [x] Roles / permissions
+  * This has been implemented with the ```@roles_required``` decorator.
+    ```python
+    @posts_api.route('/', methods=['POST'])
+    @verify_parameters(['title', 'body', 'slug'])
+    @login_required
+    @roles_required(['Administrator'])
+    def create_post():
+        # ...
+    ```
+  * There are two roles: Administrator and Moderator
+  * If the user has no assigned role, that means they are just a regular user.
+- [ ] Implement tests (currently trying to do this but experiencing major issues)
 - [ ] Automatic table creation
 - [ ] Delete / View users
 - [ ] Auto-gen. slug

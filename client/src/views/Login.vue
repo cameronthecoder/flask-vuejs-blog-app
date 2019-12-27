@@ -4,7 +4,7 @@
       <div class="hero-body">
         <div class="container">
           <div class="columns is-centered">
-            <div class="column is-5-tablet is-4-desktop is-5-widescreen">
+            <div class="column is-4-desktop is-5-widescreen is-7-mobile">
               <div class="card">
                 <div class="card-content">
                   <p class="title has-text-centered">Log In</p>
@@ -61,6 +61,8 @@ export default {
      this.$store.dispatch('fetchJWT', {
        username: this.username,
        password: this.password
+     }).then(() => {
+       this.$router.push({name: 'home'})
      })
    }
   },

@@ -1,6 +1,6 @@
+from app import app, mysql
 from flask import Blueprint, request, jsonify, request, g, abort
 from functools import wraps
-from app import app, mysql
 from json_utils import verify_parameters
 from datetime import datetime, timedelta
 import jwt, bcrypt, MySQLdb
@@ -59,11 +59,10 @@ def refresh_token():
     # Throws an error if the user doesn't exist or isn't active
     if not result:
         return jsonify({'error': 'That user does not exist.'}), 401
-    if not result['active']:
-        return jsonify({'error': 'User account is not active.'}), 401
-
+    elif not result['active']:
+        return jsonify({'error': 'Your acount has been disabled. Please contact support.'}), 403
     access_token = jwt.encode({'id': result['id'], 'username': result['username'], 'exp': datetime.utcnow() + timedelta(seconds=180), 'iss': 'blogapp'}, app.config['SECRET_KEY'], algorithm='HS256')
-
+    g.user = result
     return jsonify({'access_token': access_token.decode('utf-8')})
     
 @auth_api.route('/login/', methods=['POST'])
@@ -77,18 +76,18 @@ def login():
     result = cur.fetchone()
     # Check's if the user exists
     if result:
-        # Throw an error if the user is not active
+        # Return an error if the user is not active
         if not result['active']:
-            return jsonify({'error': 'That user is not active.'}), 401
-        # Throw an error if the password is not correct.
+            return jsonify({'error': 'Your acount has been disabled. Please contact support.'}), 403
+        # Return an error if the password is not correct.
         elif not bcrypt.checkpw(json['password'].encode('utf-8'), result['password'].encode('utf-8')):
             return jsonify({'error': 'The username or password is incorrect.'}), 401
-        # If everything is okay, encode a JWT token with the user's ID and username in the body and set the expiration date aswell as the issuer
+        # If everything is okay, encode a JWT token with the user's ID and username in the body and set the expiration date and the issuer
         else:
             access_token = jwt.encode(
                 {'id': result['id'], 'username': json['username'], 
                 'exp': datetime.utcnow() + timedelta(seconds=180), 
-                'iss': 'blogapp'}, app.config['SECRET_KEY'], 
+                'iss': 'blogapp', 'role': result['role']}, app.config['SECRET_KEY'], 
                 algorithm='HS256')
             refresh_token = jwt.encode(
                 {'exp': datetime.utcnow() + timedelta(days=14), 'iss': 'blogapp'}, 
